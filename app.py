@@ -1,6 +1,6 @@
 from flask import Flask
 from application.database import db
-from application.models import User,Role
+from application.models import User,Role,Department
 #from application.resources import api
 from application.config import LocalDevelopmentConfig
 from flask_security import Security, SQLAlchemyUserDatastore
@@ -34,12 +34,17 @@ with app.app_context():
                                            password=generate_password_hash('1234'),
                                            roles=['admin'])
         
-    if not app.security.datastore.find_user(email='doc1@doctor.com'):
-        app.security.datastore.create_user(email='doc1@doctor.com',
-                                           username='doc1',
-                                           password=generate_password_hash('1234'),
-                                           roles=['doctor'])
-        
+    
+    departments = Department.query.all()
+    if not departments:
+        departments = [
+            Department(name="Cardiology"),
+            Department(name="Neurology"),
+            Department(name="Oncology"),
+            Department(name="Pediatrics")
+        ]
+        db.session.add_all(departments)
+
     db.session.commit()
 
 from application.routes import *

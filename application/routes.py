@@ -1,6 +1,6 @@
 from flask import current_app as app, request, jsonify, render_template
 from .database import db
-#from .models import Transaction
+from .models import Doctor
 from flask_security import hash_password,verify_password,auth_required,roles_required,roles_accepted,current_user,login_user,logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -90,9 +90,66 @@ def register_user():
 def search_users():
     search_items = request.get_json()
     username = search_items["text"]
+    radio_val = search_items["radioVal"]
 
-    user = app.security.datastore.find_user(username=username)
+    if radio_val:
+        role = app.security.datastore.find_role(radio_val)
+        users = role.bearer  # list of User objects
+        arr = []
+        if radio_val == 'doctor':
+            for user in users:
+                arr.append({
+                    "email": user.email,
+                    "username": user.username,
+                    "doctorID": user.doctor_id
 
-    return jsonify({
-        "username": user.username
-    })
+                })
+
+        else:
+            for user in users:
+                arr.append({
+                    "email": user.email,
+                    "username": user.username,
+                    "patientID": user.patient_id
+
+                })
+        return jsonify(arr)
+    else:
+        user = app.security.datastore.find_user(username=username)
+        arr = []
+        arr.append({
+            "email": user.email,
+            "username": user.username,
+            "doctorID": user.doctor_id
+        })
+
+        return jsonify(arr)
+    
+
+@app.route("/api/addDoctor", methods=["POST"])
+@auth_required("token")
+@roles_required("admin")
+def add_doctor():
+    doc_info = request.get_json()
+
+    if not app.security.datastore.find_user(email = doc_info["email"]):
+        app.security.datastore.create_user(email = doc_info["email"],
+                                           username=doc_info["username"],
+                                           doctor_id=doc_info["doctorID"],
+                                           password=doc_info["password"],
+                                           roles=["doctor"])
+        
+        doctor = Doctor(doctor_id=doc_info["doctorID"],
+                        name=doc_info["username"],
+                        dept_name=doc_info["spec"])
+    
+        db.session.add(doctor)
+        db.session.commit()
+
+        return {
+            "message": "Doctor successfully added"
+        }
+    else:
+        return {
+            "message": "Doctor is already added"
+        }

@@ -10,6 +10,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True, nullable=False)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    doctor_id = db.Column(db.String)
+    patient_id = db.Column(db.String)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
     active = db.Column(db.Boolean(), nullable=False)
 
@@ -27,11 +29,11 @@ class usersRoles(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 
 
-class Doctor(db.Model): # Inherit from User, not db.Model
-    # We point the ID to the User table
+class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
-    dept_id = db.Column(db.String, db.ForeignKey('department.id'))
+    dept_name = db.Column(db.String, db.ForeignKey('department.name'))
 
     appointments = db.relationship('Appointment', backref='doctor')
 
