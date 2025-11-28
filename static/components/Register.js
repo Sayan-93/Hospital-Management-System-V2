@@ -29,7 +29,7 @@ export default {
                         <div class="text-center mt-4">
                             <button class="btn btn-primary" @click="registerUser">Register</button>
                         </div>
-                        <p class="text-center">{{message}}</p>
+                        <p class="text-center">{{patientData.message}}</p>
                     </div>
                 </div>
             </div>
@@ -41,10 +41,11 @@ export default {
             formData: {
                 "email": "",
                 "username": "",
+                "name": "",
                 "password": "",
 
             },
-            message: "",
+            patientData: "",
         }
     },
     methods: {
@@ -57,7 +58,7 @@ export default {
                 body: JSON.stringify(this.formData)
             })
             .then(response => response.json())
-            .then(data => this.message = data.message)
+            .then(data => this.patientData = data)
         }
     }
 }
